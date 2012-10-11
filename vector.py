@@ -1,3 +1,4 @@
+#from __future__ import division
 from numbers import Number
 import math
 
@@ -19,6 +20,16 @@ class Vector(tuple):
 
     def unit(self):
         return Vector(self / abs(self))
+
+    ##### Complicated things I might not implement #####
+    #get the angle between this and another vector
+    def angle(self,other):
+        return math.arccos(self.dot(other) / (abs(a)*abs(b)))
+
+    #find the projection of this vector on another
+    #a.projection(b) is the projection of a onto b
+    def projection(self,other):
+        return abs(self) * self.angle(other) * other.unit()
 
     ##### Convienence Properties #####
     # Component Vectors
@@ -85,7 +96,7 @@ class Vector(tuple):
         c = float(c)
         return Vector((x/c,y/c,z/c))
     def __floordiv__((x,y,z),c):
-        return Vector(map(int,map(math.floor,(x/c,y/c,z/c))))
+        return Vector(map(int,(x//c,y//c,z//c)))
 
     def __pos__(self):
         return self

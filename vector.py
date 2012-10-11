@@ -13,6 +13,13 @@ class Vector(tuple):
             raise ValueError('Vectors must both be 3 dimensional')
         return Vector((sy*oz-sz*oy,sz*ox-sx*oz,sx*oy-sy*ox))
 
+    #todo: make sure this is right (because it isn't)
+    #magnitude of the cross product
+    def area(self,other):
+        return abs(self) * abs(other) * math.sin(self.angle(other))
+
+    #todo: if the vectors aren't the same length, add 0's to the end of
+    #the shorter one to make them the same length
     def dot(self,other):
         if not self._verifySameLength(self,other):
             raise ValueError('Vectors must be the same length')
@@ -21,15 +28,21 @@ class Vector(tuple):
     def unit(self):
         return Vector(self / abs(self))
 
-    ##### Complicated things I might not implement #####
-    #get the angle between this and another vector
-    def angle(self,other):
+    def angle(self,other=None):
+        if other is None:
+            other = Vector(1)
         return math.arccos(self.dot(other) / (abs(a)*abs(b)))
 
     #find the projection of this vector on another
     #a.projection(b) is the projection of a onto b
     def projection(self,other):
-        return abs(self) * self.angle(other) * other.unit()
+        # Version 1 (probably slow-ish)
+        #return abs(self) * self.angle(other) * other.unit()
+        # Version 2 (probably faster than version 1)
+        #bHat = other.unit()
+        #return self.dot(bHat) * bHat
+        # Version 3 (hopefully the fastest)
+        return self.dot(other) / other.dot(other) * other
 
     ##### Convienence Properties #####
     # Component Vectors
@@ -93,7 +106,6 @@ class Vector(tuple):
     def __div__((x,y,z),c):
         return Vector((x/c,y/c,z/c))
     def __truediv__((x,y,z),c):
-        c = float(c)
         return Vector((x/c,y/c,z/c))
     def __floordiv__((x,y,z),c):
         return Vector(map(int,(x//c,y//c,z//c)))
@@ -114,3 +126,24 @@ class Vector(tuple):
     def __repr__(self):
         return ('Vector([{'+'},{'.join([str(i) for i in \
                 range(len(self))])+'}])').format(*self)
+
+    def __nonzero__(self):
+        return any(self)
+
+    ##### Comparison Methods #####
+    # For equality compare the actual vectors
+    #def __eq__(self,other):
+        #return self == other
+    #def __ne__(self,other):
+        #return self != other
+
+    # Compare the magnitude
+    def __lt__(self,other):
+        return abs(self) < abs(other)
+    def __le__(self,other):
+        return abs(self) <= abs(other)
+
+    def __gt__(self,other):
+        return abs(self) > abs(other)
+    def __ge__(self,other):
+        return abs(self) >= abs(other)

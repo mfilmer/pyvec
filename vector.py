@@ -2,27 +2,39 @@
 from numbers import Number
 import math
 
+i = Vector([1,0,0])
+j = Vector([0,1,0])
+k = Vector([0,0,1])
+
 class Vector(tuple):
     def __init__(self,inVec):
         length = len(inVec)
         tuple.__init__(inVec)
 
     ##### Public Methods #####
-    def cross((sx,sy,sz),(ox,oy,oz)):
-        if not len(self) == len(other) == 3:
+    def cross(self,other):
+        if not len(self) <= 3 and len(other) <= 3:
             raise ValueError('Vectors must both be 3 dimensional')
+        sx,sy,sz = self.extend(3)
+        ox,oy,oz = other.extend(3)
         return Vector((sy*oz-sz*oy,sz*ox-sx*oz,sx*oy-sy*ox))
 
     #todo: make sure this is right (because it isn't)
     #magnitude of the cross product
     def area(self,other):
+        if not len(self) <= 3 and len(other) <= 3:
+            raise ValueError('Vectors must both be 3 dimensional')
         return abs(self) * abs(other) * math.sin(self.angle(other))
 
     #todo: if the vectors aren't the same length, add 0's to the end of
     #the shorter one to make them the same length
     def dot(self,other):
-        if not self._verifySameLength(self,other):
-            raise ValueError('Vectors must be the same length')
+        ls = len(self)
+        lo = len(other)
+        if not ls == lo:
+            #raise ValueError('Vectors must be the same length')
+            self = Vector(self.extend(lo))
+            other = Vector(other.extend(ls))
         return sum([s*o for s,o in zip(self,other)])
 
     def unit(self):
@@ -30,8 +42,8 @@ class Vector(tuple):
 
     def angle(self,other=None):
         if other is None:
-            other = Vector(1)
-        return math.arccos(self.dot(other) / (abs(a)*abs(b)))
+            other = Vector([1])
+        return math.acos(self.dot(other) / (abs(self)*abs(other)))
 
     #find the projection of this vector on another
     #a.projection(b) is the projection of a onto b
@@ -43,6 +55,11 @@ class Vector(tuple):
         #return self.dot(bHat) * bHat
         # Version 3 (hopefully the fastest)
         return self.dot(other) / other.dot(other) * other
+
+    def extend(self,length):
+        self = list(self)
+        self.extend([0]*(length-len(self)))
+        return Vector(self)
 
     ##### Convienence Properties #####
     # Component Vectors
@@ -119,8 +136,19 @@ class Vector(tuple):
     def __abs__(self):
         return math.sqrt(sum([s**2 for s in self]))
 
+    def __getitem__(self,key):
+        if isinstance(key,int) or isinstance(key,slice):
+            return Vector(super(Vector,self).__getitem__(key))
+            #return Vector(self[key])
+        elif key in ['i','j','k']:
+            if key == 'i': return Vector(super(Vector,self).__getitem__(0))
+            elif key == 'j': return Vector(super(Vector,self).__getitem__(1))
+            else: return Vector(super(Vector,self).__getitem__(2))
+        else:
+            raise KeyError
+
     def __str__(self):
-        return ('({'+'},{'.join([str(i) for i in range(len(self))])+'})')\
+        return ('<{'+'},{'.join([str(i) for i in range(len(self))])+'}>')\
                 .format(*self)
 
     def __repr__(self):

@@ -1,15 +1,14 @@
+# vector\vector.py
+
 #from __future__ import division
 from numbers import Number
 import math
 
-i = Vector([1,0,0])
-j = Vector([0,1,0])
-k = Vector([0,0,1])
-
 class Vector(tuple):
-    def __init__(self,inVec):
-        length = len(inVec)
-        tuple.__init__(inVec)
+    #def __new__(self,inVec):
+        #return tuple.__new__(self,inVec)
+    #def __init__(self,inVec):
+        #tuple.__init__(inVec)
 
     ##### Public Methods #####
     def cross(self,other):
@@ -22,12 +21,11 @@ class Vector(tuple):
     #todo: make sure this is right (because it isn't)
     #magnitude of the cross product
     def area(self,other):
-        if not len(self) <= 3 and len(other) <= 3:
+        """Calculate the magnitude of the cross product"""
+        if len(self) > 3 or len(other) > 3:
             raise ValueError('Vectors must both be 3 dimensional')
         return abs(self) * abs(other) * math.sin(self.angle(other))
 
-    #todo: if the vectors aren't the same length, add 0's to the end of
-    #the shorter one to make them the same length
     def dot(self,other):
         ls = len(self)
         lo = len(other)
@@ -55,6 +53,9 @@ class Vector(tuple):
         #return self.dot(bHat) * bHat
         # Version 3 (hopefully the fastest)
         return self.dot(other) / other.dot(other) * other
+
+    def dim(self):
+        return self[0:-1].dim() if self[-1] == 0 else len(self)
 
     def extend(self,length):
         self = list(self)
@@ -136,14 +137,21 @@ class Vector(tuple):
     def __abs__(self):
         return math.sqrt(sum([s**2 for s in self]))
 
+    def __getslice__(self,i,j):
+        return Vector(super(Vector, self).__getitem__(slice(i,j,1)))
+
     def __getitem__(self,key):
-        if isinstance(key,int) or isinstance(key,slice):
-            return Vector(super(Vector,self).__getitem__(key))
-            #return Vector(self[key])
+        if isinstance(key,int):
+            try:
+                return super(Vector, self).__getitem__(key)
+            except IndexError:
+                raise IndexError('index out of range')
+        elif isinstance(key,slice):
+            return Vector(super(Vector, self).__getitem__(key))
         elif key in ['i','j','k']:
-            if key == 'i': return Vector(super(Vector,self).__getitem__(0))
-            elif key == 'j': return Vector(super(Vector,self).__getitem__(1))
-            else: return Vector(super(Vector,self).__getitem__(2))
+            if key == 'i': return self.__getitem__(0)
+            elif key == 'j': return self.__getitem__(1)
+            else: return self.__getitem__(2)
         else:
             raise KeyError
 
@@ -159,13 +167,16 @@ class Vector(tuple):
         return any(self)
 
     ##### Comparison Methods #####
-    # For equality compare the actual vectors
-    #def __eq__(self,other):
-        #return self == other
-    #def __ne__(self,other):
-        #return self != other
+    def isEqual(self,other):
+        """Determine if two vectors are equal (magnitude and direction)"""
+        return tuple(self) == tuple(other)
 
     # Compare the magnitude
+    def __eq__(self,other):
+        return abs(self) == abs(other)
+    def __ne__(self,other):
+        return abs(self) != abs(other)
+
     def __lt__(self,other):
         return abs(self) < abs(other)
     def __le__(self,other):
@@ -175,3 +186,25 @@ class Vector(tuple):
         return abs(self) > abs(other)
     def __ge__(self,other):
         return abs(self) >= abs(other)
+
+class _Const(object):
+    def __init__(self):
+        self.__i = Vector([1,0,0])
+        self.__j = Vector([0,1,0])
+        self.__k = Vector([0,0,1])
+        self.__null = Vector([0])
+
+    @property
+    def i(self):
+        return self.__i
+    @property
+    def j(self):
+        return self.__j
+    @property
+    def k(self):
+        return self.__k
+    @property
+    def null(self):
+        return self.__null
+
+const = _Const()

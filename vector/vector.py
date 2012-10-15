@@ -1,6 +1,7 @@
 # vector\vector.py
 
 #from __future__ import division
+from itertools import izip_longest
 from numbers import Number
 import math
 
@@ -12,8 +13,7 @@ class Vector(tuple):
 
     ##### Public Methods #####
     def cross(self,other):
-        if not len(self) <= 3 and len(other) <= 3:
-            raise ValueError('Vectors must both be 3 dimensional')
+        Vector._minDim(3,self,other)
         sx,sy,sz = self.extend(3)
         ox,oy,oz = other.extend(3)
         return Vector((sy*oz-sz*oy,sz*ox-sx*oz,sx*oy-sy*ox))
@@ -22,18 +22,13 @@ class Vector(tuple):
     #magnitude of the cross product
     def area(self,other):
         """Calculate the magnitude of the cross product"""
-        if len(self) > 3 or len(other) > 3:
-            raise ValueError('Vectors must both be 3 dimensional')
-        return abs(self) * abs(other) * math.sin(self.angle(other))
+        Vector._minDim(3,self,other)
+        return abs(self) * abs(other) * abs(math.sin(self.angle(other)))
 
     def dot(self,other):
         ls = len(self)
         lo = len(other)
-        if not ls == lo:
-            #raise ValueError('Vectors must be the same length')
-            self = Vector(self.extend(lo))
-            other = Vector(other.extend(ls))
-        return sum([s*o for s,o in zip(self,other)])
+        return sum([s*o for s,o in izip_longest(self,other,0)])
 
     def unit(self):
         return Vector(self / abs(self))
@@ -46,12 +41,6 @@ class Vector(tuple):
     #find the projection of this vector on another
     #a.projection(b) is the projection of a onto b
     def projection(self,other):
-        # Version 1 (probably slow-ish)
-        #return abs(self) * self.angle(other) * other.unit()
-        # Version 2 (probably faster than version 1)
-        #bHat = other.unit()
-        #return self.dot(bHat) * bHat
-        # Version 3 (hopefully the fastest)
         return self.dot(other) / other.dot(other) * other
 
     def dim(self):
@@ -89,28 +78,21 @@ class Vector(tuple):
     def _intMul(self,c):
         return Vector([s*c for s in self])
 
-    @staticmethod
-    def _verifySameLength(vec1,vec2):
-        return len(vec1) == len(vec2)
+    def _minDim(dim,*vecs):
+        for vec in vecs:
+            if len(vec) > dim:
+                raise ValueError('Vectors must both be {0} dimensional'.format(dim))
 
     ##### Magic Methods #####
     def __add_(self,other):
-        if not self._verifySameLength(self,other):
-            raise ValueError('Vectors must be the same length')
-        return Vector([s+o for s,o in zip(self,other)])
+        return Vector([s+o for s,o in izip_longest(self,other,0)])
     def __radd__(self,other):
-        if not self._verifySameLength(self,other):
-            raise ValueError('Vectors must be the same length')
-        return Vector([s+o for s,o in zip(self,other)])
+        return Vector([s+o for s,o in izip_longest(self,other,0)])
 
     def __sub__(self,other):
-        if not self._verifySameLength(self,other):
-            raise ValueError('Vectors must be the same length')
-        return Vector([s-o for s,o in zip(self,other)])
+        return Vector([s-o for s,o in izip_longest(self,other,0)])
     def __rsub__(self,other):
-        if not self._verifySameLength(self,other):
-            raise ValueError('Vectors must be the same length')
-        return Vector([o-s for s,o in zip(self,other)])
+        return Vector([o-s for s,o in izip_longest(self,other,0)])
 
     def __mul__(self,other):
         if isinstance(other,Number):

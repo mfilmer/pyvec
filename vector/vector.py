@@ -6,8 +6,13 @@ from numbers import Number
 import math
 
 class Vector(tuple):
-    #def __new__(self,inVec):
-        #return tuple.__new__(self,inVec)
+    def __new__(self,inVec,is3D=False):
+        print 'making a new',
+        if is3D:
+            print '3D vector'
+            return Vector3D(inVec)
+        print 'boring vector'
+        return tuple.__new__(self,inVec)
     #def __init__(self,inVec):
         #tuple.__init__(inVec)
 
@@ -18,7 +23,7 @@ class Vector(tuple):
         ox,oy,oz = other.extend(3)
         return Vector((sy*oz-sz*oy,sz*ox-sx*oz,sx*oy-sy*ox))
 
-    #todo: make sure this is right (because it isn't)
+    #todo: make sure this is right (because it probably isn't)
     #magnitude of the cross product
     def area(self,other):
         """Calculate the magnitude of the cross product"""
@@ -44,6 +49,7 @@ class Vector(tuple):
         return self.dot(other) / other.dot(other) * other
 
     def dim(self):
+        """Get the highest dimension of the vector"""
         return self[0:-1].dim() if self[-1] == 0 else len(self)
 
     def extend(self,length):
@@ -168,6 +174,13 @@ class Vector(tuple):
         return abs(self) > abs(other)
     def __ge__(self,other):
         return abs(self) >= abs(other)
+
+class Vector3D(Vector):
+    """Vector class optimized for 3D vectors"""
+    def __init__(self,inVec):
+        self = self.extend(3)
+    def __str__(self):
+        return '5'
 
 class _Const(object):
     def __init__(self):

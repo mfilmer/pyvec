@@ -31,6 +31,8 @@ class Vector(tuple):
         return abs(self) * abs(other) * abs(math.sin(self.angle(other)))
 
     def dot(self,other):
+        #todo: consider:
+        #sum(itertools.imap(operator.mul,self,other))
         ls = len(self)
         lo = len(other)
         return sum([s*o for s,o in izip_longest(self,other,0)])
